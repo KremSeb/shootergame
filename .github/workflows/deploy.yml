@@ -29,26 +29,6 @@ jobs:
         run: |
           mkdir -p ./deploy
           cp ./target/wasm32-unknown-unknown/release/spaceshooter.wasm ./deploy/
-          python - <<'PY'
-          import json, os, pathlib, re, subprocess
-          meta = subprocess.check_output(["cargo", "metadata", "--format-version", "1", "--no-deps"])
-          data = json.loads(meta)
-          pkg = next((p for p in data["packages"] if p["name"] == "macroquad"), None)
-          if not pkg:
-              raise SystemExit("macroquad not found in cargo metadata")
-          crate_dir = pathlib.Path(pkg["manifest_path"]).parent
-          src = crate_dir / "js" / "mq_js_bundle.js"
-          if not src.exists():
-              raise SystemExit(f"mq_js_bundle.js not found at {src}")
-          print(f"Using mq_js_bundle.js from {src}")
-          pathlib.Path("deploy/mq_js_bundle.js").write_bytes(src.read_bytes())
-
-          html = pathlib.Path("index.html").read_text()
-          sha = os.environ.get("GITHUB_SHA", "")[:7] or "dev"
-          html = re.sub(r'src="mq_js_bundle.js"', f'src="mq_js_bundle.js?v={sha}"', html)
-          html = re.sub(r'load\\("spaceshooter.wasm"\\)', f'load("spaceshooter.wasm?v={sha}")', html)
-          pathlib.Path("deploy/index.html").write_text(html)
-          PY
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

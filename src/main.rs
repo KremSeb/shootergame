@@ -50,7 +50,14 @@ impl Shape {
     }
 }
 
-#[macroquad::main("Space Shooter")]
+fn window_conf() -> Conf {
+    let mut conf = miniquad::conf::Conf::default();
+    conf.window_title = "Space Shooter".to_string();
+    conf.platform.webgl_version = miniquad::conf::WebGLVersion::WebGL2;
+    conf.into()
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     // shader init
     let mut direction_modifier: f32 = 0.0;

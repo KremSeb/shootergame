@@ -31,12 +31,19 @@ jobs:
           cp ./target/wasm32-unknown-unknown/release/spaceshooter.wasm ./deploy/
           cp index.html ./deploy/
           python - <<'PY'
-          import glob, re, pathlib
-          lock = pathlib.Path("Cargo.lock").read_text()
-          m = re.search(r'(?ms)^name = "macroquad"\\s*^version = "([^"]+)"', lock)
-          if not m:
-              raise SystemExit("macroquad not found in Cargo.lock")
-          ver = m.group(1)
+          import glob, pathlib
+          import tomllib
+          toml = tomllib.loads(pathlib.Path("Cargo.toml").read_text())
+          deps = toml.get("dependencies", {})
+          macroquad = deps.get("macroquad")
+          if not macroquad:
+              raise SystemExit("macroquad not found in Cargo.toml dependencies")
+          if isinstance(macroquad, str):
+              ver = macroquad
+          elif isinstance(macroquad, dict) and "version" in macroquad:
+              ver = macroquad["version"]
+          else:
+              raise SystemExit("macroquad dependency has no version in Cargo.toml")
           patterns = [
               f"{pathlib.Path.home()}/.cargo/registry/src/**/macroquad-{ver}/js/mq_js_bundle.js",
           ]

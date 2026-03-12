@@ -30,7 +30,25 @@ jobs:
           mkdir -p ./deploy
           cp ./target/wasm32-unknown-unknown/release/spaceshooter.wasm ./deploy/
           cp index.html ./deploy/
-          cp mq_js_bundle.js ./deploy/
+          python - <<'PY'
+          import glob, re, pathlib
+          lock = pathlib.Path("Cargo.lock").read_text()
+          m = re.search(r'(?ms)^name = "macroquad"\\s*^version = "([^"]+)"', lock)
+          if not m:
+              raise SystemExit("macroquad not found in Cargo.lock")
+          ver = m.group(1)
+          patterns = [
+              f"{pathlib.Path.home()}/.cargo/registry/src/**/macroquad-{ver}/js/mq_js_bundle.js",
+          ]
+          matches = []
+          for pat in patterns:
+              matches.extend(glob.glob(pat, recursive=True))
+          if not matches:
+              raise SystemExit(f"mq_js_bundle.js not found for macroquad {ver}")
+          src = matches[0]
+          print(f"Using mq_js_bundle.js from {src}")
+          pathlib.Path("deploy/mq_js_bundle.js").write_bytes(pathlib.Path(src).read_bytes())
+          PY
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

@@ -27,10 +27,11 @@ jobs:
 
       - name: Prepare Deployment Directory
         run: |
-          mkdir -p ./deploy
+          mkdir -p ./deploy/assets
           cp ./target/wasm32-unknown-unknown/release/spaceshooter.wasm ./deploy/
           cp index.html ./deploy/
           cp mq_js_bundle.js ./deploy/
+          cp -r assets/ ./deploy/
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
